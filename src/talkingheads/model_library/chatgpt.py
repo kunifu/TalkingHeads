@@ -16,7 +16,7 @@ class ChatGPTClient(BaseBrowser):
     """ChatGPTClient class to interact with ChatGPT"""
 
     def __init__(self, **kwargs):
-        super().__init__(client_name="ChatGPT", url="https://chat.openai.com", **kwargs)
+        super().__init__(client_name="ChatGPT", url="https://chat.openai.com/?model=text-davinci-002-render-sha", **kwargs)
 
     def postload_custom_func(self):
         today_str = datetime.today().strftime("%Y-%m-%d")
@@ -69,30 +69,44 @@ class ChatGPTClient(BaseBrowser):
         """
 
         # Find login button, click it
-        login_button = self.wait_until_appear(By.XPATH, self.markers.login_xq)
+        login_button = self.wait_until_appear(By.XPATH, "//div[text()='Log in']")
         login_button.click()
         self.logger.info("Clicked login button")
         time.sleep(1)
 
+        # Find Google login button, click it
+        google_button = self.wait_until_appear(By.XPATH, "//span[text()='Google で続ける']")
+        google_button.click()
+        self.logger.info("Clicked Google login button")
+        time.sleep(1)
+
         # Find email textbox, enter e-mail
-        email_box = self.wait_until_appear(By.XPATH, self.markers.email_xq)
+        email_box = self.wait_until_appear(By.XPATH, "//input[@type='email']")
         email_box.send_keys(username)
         self.logger.info("Filled email box")
-
         # Click continue
-        continue_button = self.wait_until_appear(By.XPATH, self.markers.continue_xq)
-        continue_button.click()
+        email_box.send_keys(Keys.ENTER)
         time.sleep(1)
         self.logger.info("Clicked continue button")
 
         # Find password textbox, enter password
-        pass_box = self.wait_until_appear(By.ID, self.markers.pwd_iq)
+        pass_box = self.wait_until_appear(By.XPATH, "//input[@name='Passwd']")
         pass_box.send_keys(password)
         self.logger.info("Filled password box")
         # Click continue
         pass_box.send_keys(Keys.ENTER)
         time.sleep(1)
         self.logger.info("Logged in")
+
+        # Select a Workspace
+        # 会社のワークスペースを選択（現状は一番目が会社のワークスペースになっている）
+        workspace = self.wait_until_appear(By.CSS_SELECTOR, "svg.icon-lg.my-auto")
+        workspace.click()
+        time.sleep(1)
+
+        # Jump to the chat page
+        self.browser.get(self.url)
+        time.sleep(1)
 
         try:
             # Pass introduction
